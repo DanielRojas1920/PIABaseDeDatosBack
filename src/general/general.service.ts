@@ -105,7 +105,39 @@ export class GeneralService {
     async fetchAll(repository: string): Promise<any[]> {
         return this.repositories[repository].find({
             relations: this.relations[repository]});
+    }
+
+    async consultasSP(params: string[], id: number): Promise<any>{
+        switch (id){
+            case 0:
+                return this.manager.query(
+                    'EXEC PaquetesAgendados;'
+                );
+            case 1:
+                return this.manager.query(
+                    'EXEC PaquetesStatus @0',
+                    [Number(params[0])]
+                );
+            case 2:
+                return this.manager.query(
+                    'EXEC PaquetesCliente @0',
+                    [Number(params[0])]
+                );
+            case 3:
+                console.log(params)
+                return this.manager.query(
+                    'EXEC PaquetesBusqueda @0, @1, @2, @3',
+                    [
+                        params[0] === null? null : Number(params[0]), 
+                        params[1] === null? null : Number(params[1]), 
+                        params[2] === null? null : Number(params[2]), 
+                        params[3] === null? null : params[3],
+                    ]   
+                );
+            default:
+                console.log(id);
         }
+    }
     
     async fetchById(id: number, repository: string): Promise<any> {
         const found = await this.repositories[repository].findOne(id);
@@ -117,8 +149,9 @@ export class GeneralService {
     
     async add(row : any, repository: string): Promise<any>{
         let table: any;
-        if (repository === 'Paquetes'){
-            return this.manager.query('EXEC InsertPaquete @0, @1, @2, @3, @4, @5, @6, @7, @8, @9',
+        switch (repository) {
+            case 'Paquetes':
+                return this.manager.query('EXEC InsertPaquete @0, @1, @2, @3, @4, @5, @6, @7, @8, @9',
                 [row.Desc,
                 row.IDCliente,
                 row.IDTipo,
@@ -129,8 +162,12 @@ export class GeneralService {
                 row.Alto,
                 row.Peso,
                 row.EsFragil]);
-        }
-        switch (repository) {
+            case 'Entregas':
+                return this.manager.query('EXEC InsertEntrega @0, @1, @2, @3',
+                [row.IDPaquetes,
+                row.IDTransporte,
+                row.FechaEntrega,
+                row.FechaSalida,]);
             case 'Clientes':
                 table = new Clientes();
                 table.Nombre = row.Nombre;
@@ -169,12 +206,9 @@ export class GeneralService {
 
     }
     
-    async remove (id:number, repository : string){
-        const result = await this.repositories[repository].delete(id);
-        if (result.affected === 0){
-            throw new NotFoundException(`No se encontró en "${repository}" id: "${id}"`)
-        }
-        return {message: 'Se borró el EstadoPaquete'}
+    async remove (id: number, repository : string){
+        return this.manager.query('EXEC CancelPaquete @0',
+        [id]);
     }
     
     async update(id: number, repository:string,row: any){

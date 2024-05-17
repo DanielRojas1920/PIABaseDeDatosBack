@@ -10,6 +10,7 @@ import { PaisesDto } from 'src/Entities/paises/paises.dto';
 import { EstadosDto } from 'src/Entities/estados/estados.dto';
 import { CPDto } from 'src/Entities/CP/CP.dto';
 import { EstadoEntregaDto } from 'src/Entities/EstadoEntregas/EstadoEntrega.dto';
+import { response } from 'express';
 
 @Controller('general')
 export class GeneralController {
@@ -26,15 +27,20 @@ export class GeneralController {
         return this.generalService.add(row, entity);
     }
 
-    @Get('/:entity/:id')
-    getTipoById (@Param('id') id: number, @Param('entity') entity: string): Promise <any> {
-        console.log(id);
-        return this.generalService.fetchById(id, entity);
+    @Get('/consultasSP/:id/:Param')
+    getTipoById (@Param('Param') param: string, @Param('id') id:number): Promise <any> {
+        let params = param.split('0').map((value) => {
+            if (value === 'null') return null;
+            else return value;
+        })
+
+        return this.generalService.consultasSP(params, Number(id));
+
     }
 
     @Delete('/:entity/:id')
-    delete(@Param('id') id: number, @Param('entity') entity: string) {
-        return this.generalService.remove(id, entity);
+    delete(@Param('entity') entity: string, @Param('id') id:number) {
+        return this.generalService.remove(id, entity)
     }
 
     @Put('/:entity/:id')

@@ -11,7 +11,7 @@ export class Transportes {
     @PrimaryGeneratedColumn()
     IDTransportes: number;
 
-    @Column({name: 'PorcentajeLlenado', type: 'decimal', scale: 2, precision: 6, nullable: false})
+    @Column({name: 'PorcentajeLlenado', type: 'decimal', scale: 6, precision: 10, nullable: false})
     PorcentajeLlenado: number;
 
     @ManyToOne(() => Empleados)
