@@ -15,6 +15,7 @@ import { Paquetes } from 'src/Entities/Paquetes/Paquetes.entity';
 import { Entregas } from 'src/Entities/Entregas/Entregas.entity';
 import { Transportes } from 'src/Entities/Transportes/Transportes.entity';
 import { Modelos } from 'src/Entities/Modelos/Modelos.entity';
+import { response } from 'express';
 
 
 export interface Repositories {
@@ -46,7 +47,7 @@ export class GeneralService {
         'IDDetallesPaquete', 
         'IDCliente', 
         'IDDestinatarios',
-        'IDSucursales'],
+        'IDSucursales',],
         'Sucursales': ['IDPais', 'IDEstado', 'IDCP'],
         'Transportes': ['IDEmpleado', 'IDModelo', 'IDTransporteEstado'],
     }
@@ -124,7 +125,6 @@ export class GeneralService {
                     [Number(params[0])]
                 );
             case 3:
-                console.log(params)
                 return this.manager.query(
                     'EXEC PaquetesBusqueda @0, @1, @2, @3',
                     [
@@ -139,8 +139,8 @@ export class GeneralService {
         }
     }
     
-    async fetchById(id: number, repository: string): Promise<any> {
-        const found = await this.repositories[repository].findOne(id);
+    async fetchById(id: any, repository: string): Promise<any> {
+        const found = await this.repositories[repository].findOne({where: id});
         if (!found) {
             throw new NotFoundException(`El "${repository}" con id = "${id}" no se encontró`)
         }
@@ -211,68 +211,51 @@ export class GeneralService {
         [id]);
     }
     
-    async update(id: number, repository:string,row: any){
-        const hasRow = await this.fetchById(id, repository)
-        if (!hasRow) throw new Error (`El EstadoPaquete con id: "${id}" no fue encontrado`);
+    async update(repository:string,row: any, id:number){
+        let rowId;
 
-        switch (row) {
-            case 'Clientes':
-                await this.repositories[repository].update(
-                    id,{
-                        Nombre:row.Nombre,
-                        ApellidoP: row.ApellidoP,
-                        ApellidoM: row.ApellidoM,
-                        Correo: row.Correo,
-                        Telefono: row.Telefono,
-                    });
-            case 'Destinatarios':
-                await this.repositories[repository].update(
-                    id,{
-                        Nombre:row.Nombre,
-                        ApellidoP: row.ApellidoP,
-                        ApellidoM: row.ApellidoM,
-                        Correo: row.Correo,
-                        Telefono: row.Telefono,
-                        ClaveRecepcion: row.ClaveRecepcion,
-                        Numero: row.Numero,
-                        Calle: row.Calle,
-                        IDPais: row.IDPais,
-                        IDEstado: row.IDEstado,
-                        IDCP: row.IDCP,
-                    });
-            case 'Paquetes':
-                await this.repositories[repository].update(
-                    id,{
-                        Clave:row.Clave,
-                        Desc: row.Desc,
-                        IDTipo: row.IDTipo,
-                        IDEstadoPaquete: row.IDEstadoPaquete,
-                        IDDetallesPaquete: row.IDDetallesPaquete,
-                        IDCliente: row.IDCliente,
-                        IDDestinatarios: row.IDDestinatarios,
-                        IDSucursales: row.IDSucursales,
-                    });
-            case 'DetallesPaquetes':
-                await this.repositories[repository].update(
-                    id,{
-                        Ancho:row.Ancho,
-                        Largo: row.Largo,
-                        Alto: row.Alto,
-                        Peso: row.Peso,
-                        EsFragil: row.EsFragil,
-                    });
-            case 'Entregas':
-                await this.repositories[repository].update(
-                    id,{
-                        FechaEntrega:row.FechaEntrega,
-                        FechaSalida: row.FechaSalida,
-                        FechaRecibido: row.FechaRecibido,
-                        IDPaquetes: row.IDPaquetes,
-                        IDTransporte: row.IDTransporte,
-                        IDEstadoEntrega: row.IDEstadoEntrega,
-                    });
+        if (repository === 'Clientes'){
+            rowId ={
+                'idCliente': id,
+            }
         }
 
+        else if (repository === 'Destinatarios'){
+            rowId = {
+                'IDDestinatarios': id,
+            }
+        }
+        else if (repository === 'Paquetes'){
+            rowId = {
+                'IDPaquete': id,
+            }
+
+            console.log(row);
+
+            const hasRow = await this.fetchById(rowId, repository)
+            if (!hasRow) throw new Error (`El EstadoPaquete con id: "${id}" no fue encontrado`);
+
+            if (Object.keys(row['DetallesPaquete']).length !== 0)
+            this.repositories['DetallesPaquete'].update(id,row['DetallesPaquete']);
+
+            delete row['DetallesPaquete'];
+
+            console.log(row)
+            
+            if (Object.keys(row).length !== 0)
+            return this.repositories[repository].update(id,row);
+
+            return 'Vacio'
+        }
+        const hasRow = await this.fetchById(rowId, repository)
+        if (!hasRow) throw new Error (`El EstadoPaquete con id: "${id}" no fue encontrado`);
+        
+
+        if (Object.keys(row).length !== 0)
+        return this.repositories[repository].update(
+            id,row);
+
+        return 'Vacio';
 
     }
 

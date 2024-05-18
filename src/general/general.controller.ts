@@ -44,20 +44,8 @@ export class GeneralController {
     }
 
     @Put('/:entity/:id')
-    async updateTipo(@Param('entity') entity: string, @Param('id') id:number, @Body() 
-    data: (TipoDto 
-        | ClientesDto 
-        | EstadoPaqueteDto 
-        | DetallesPaqueteDto
-        | SucursalesDto
-        | PaisesDto
-        | EstadosDto
-        | CPDto
-        | EstadoEntregaDto
-
-    )) {
-        await this.generalService.update(id,entity ,data);
-        return {message: 'información del Tipo actualizada'}
+    async updateTipo(@Param('entity') entity: string, @Body() data: any, @Param('id') id:number) {
+        return this.generalService.update(entity ,data, Number(id))
     }
 
 }
