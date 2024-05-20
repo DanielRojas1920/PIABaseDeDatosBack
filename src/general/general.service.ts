@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Clientes } from 'src/Entities/clientes/clientes.entity';
 import { EstadoPaquete } from 'src/Entities/estado-paquete/estado-paquete.entity';
 import { Tipos } from 'src/Entities/tipos/tipos.entity';
-import { EntityManager, Repository, getConnection } from 'typeorm';
+import { EntityManager, In, Repository, getConnection } from 'typeorm';
 import { DetallesPaquete } from 'src/Entities/DetallesPaquete/DetallesPaquete.entity';
 import { Sucursales } from 'src/Entities/Sucursales/Sucursales.entity';
 import { Paises } from 'src/Entities/paises/paises.entity';
@@ -104,8 +104,88 @@ export class GeneralService {
 }
 
     async fetchAll(repository: string): Promise<any[]> {
+        if (repository === 'Paquetes'){
+            return this.repositories['Paquetes'].find({
+                relations: [
+                    'IDTipo',
+                    'IDEstadoPaquete',
+                    'IDDetallesPaquete',
+                    'IDDestinatarios',
+                    'IDDestinatarios.IDPais',
+                    'IDDestinatarios.IDEstado',
+                    'IDDestinatarios.IDCP',
+                    'IDCliente'
+                ],  
+
+                });
+        }
         return this.repositories[repository].find({
             relations: this.relations[repository]});
+    }
+
+    async PaquetesDisponibles(id: number): Promise<any>{
+        if (id === 0){
+            return this.repositories['Paquetes'].find({
+                relations: [
+                    'IDTipo',
+                    'IDEstadoPaquete',
+                    'IDDetallesPaquete',
+                    'IDDestinatarios',
+                    'IDDestinatarios.IDPais',
+                    'IDDestinatarios.IDEstado',
+                    'IDDestinatarios.IDCP',
+                    'IDCliente'
+                ],
+                where: {
+                    IDEstadoPaquete: 1
+                }
+                });
+        }
+        else if (id === 1) {
+            return this.repositories['Paquetes'].find({
+                relations: [
+                    'IDTipo',
+                    'IDEstadoPaquete',
+                    'IDDetallesPaquete',
+                    'IDDestinatarios',
+                    'IDDestinatarios.IDPais',
+                    'IDDestinatarios.IDEstado',
+                    'IDDestinatarios.IDCP',
+                    'IDCliente'
+                ],
+                where: {
+                    IDEstadoPaquete: In([1,2])
+                }
+    
+                });
+        }
+        else if (id===2) {
+            return this.repositories['Paquetes'].find({
+                relations: [
+                    'IDTipo',
+                    'IDEstadoPaquete',
+                    'IDDetallesPaquete',
+                    'IDDestinatarios',
+                    'IDDestinatarios.IDPais',
+                    'IDDestinatarios.IDEstado',
+                    'IDDestinatarios.IDCP',
+                    'IDCliente'
+                ],
+                where: {
+                    IDEstadoPaquete: In([2])
+                }
+    
+                });
+        }else {
+            return this.repositories['Transportes'].find({
+                relations: this.relations['Transportes'],
+                where: {
+                    'IDTransporteEstado': 1
+                }
+    
+                });
+        }
+
     }
 
     async consultasSP(params: string[], id: number): Promise<any>{
@@ -192,16 +272,10 @@ export class GeneralService {
                 table.IDCP = row.IDCP;
                 await this.repositories[repository].save(table);
                 return table;
-            case 'Entregas':
-                table = new Entregas();
-                table.FechaEntrega = row.FechaEntrega;
-                table.FechaSalida = row.FechaSalida;
-                table.FechaRecibido = row.FechaRecibido;
-                table.IDPaquetes = row.IDPaquetes;
-                table.IDTransporte = row.IDTransporte;
-                table.IDEstadoEntrega = row.IDEstadoEntrega;
-                await this.repositories[repository].save(table);
-                return table;
+            case 'EntregarPaquete':
+                return this.manager.query('EXEC EntregarPaquete @0, @1',
+                [row.IDPaquete,
+                row.FechaEntrega,]);
         }
 
     }

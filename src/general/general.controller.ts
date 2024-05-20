@@ -22,6 +22,11 @@ export class GeneralController {
         return this.generalService.fetchAll(entity);
     }
 
+    @Get('/PaquetesDisponibles/:id')
+    getPaquetes(@Param('id') id:number): Promise <any[]>{
+        return this.generalService.PaquetesDisponibles(Number(id));
+    }
+
     @Post('/:entity')
     createTipo(@Param('entity') entity:string, @Body() row: any) {
         return this.generalService.add(row, entity);

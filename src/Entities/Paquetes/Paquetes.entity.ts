@@ -21,7 +21,7 @@ export class Paquetes{
 
     @ManyToOne(() => Tipos)
     @JoinColumn({name: 'IDTipo'})
-    IDTipo: number;
+    IDTipo: Tipos;
 
     @ManyToOne(() => EstadoPaquete)
     @JoinColumn({name: 'IDEstadoPaquete'})
