@@ -11,10 +11,10 @@ export class Modelos {
     @Column({name: 'Modelo', length: 40, nullable: false})
     Modelo: string;
 
-    @Column({type: 'decimal', name: 'CapacidadTanque', precision: 8, scale:2, nullable: false})
+    @Column({type: 'decimal', name: 'CapacidadTanque', precision: 10, scale:2, nullable: false})
     CapacidadTanque: number;
 
-    @Column({type: 'decimal', name: 'CargaMax', precision: 8, scale:2, nullable: false})
+    @Column({type: 'decimal', name: 'CargaMax', precision: 10, scale:2, nullable: false})
     CargaMax: number;
 
     @Column({type: 'decimal', name: 'AnchoMax', precision: 6, scale:2, nullable: false})
