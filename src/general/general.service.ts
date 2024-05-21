@@ -309,8 +309,11 @@ export class GeneralService {
             const hasRow = await this.fetchById(rowId, repository)
             if (!hasRow) throw new Error (`El EstadoPaquete con id: "${id}" no fue encontrado`);
 
-            if (Object.keys(row['DetallesPaquete']).length !== 0)
-            this.repositories['DetallesPaquete'].update(id,row['DetallesPaquete']);
+            if (Object.keys(row['DetallesPaquete']).length !== 0){
+                console.log('yes');
+                this.repositories['DetallesPaquete'].update(id,row['DetallesPaquete']);
+            }
+            
 
             delete row['DetallesPaquete'];
 
